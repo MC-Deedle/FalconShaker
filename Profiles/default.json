@@ -1,0 +1,77 @@
+{
+    "Engine 1 RPM": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Engine 2 RPM": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Gear Up": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Gear Down": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Cannon": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "AAMissile Release": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "AGMissile Release": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Bomb Release": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Jettison (Not Implemented)": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Mild Damage": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Heavy Damage": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "G-Force (Not Implemented)": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Stall (Not Implemented)": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Tactile Runway": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Air Brakes (Not Implemented)": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    }
+}
