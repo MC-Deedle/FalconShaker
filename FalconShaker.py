@@ -26,6 +26,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog
 import pyaudio
 import pygame.mixer
+import pygame._sdl2.audio as sdl2_audio
 import threading
 import time
 import ctypes
@@ -313,6 +314,7 @@ class FalconShakerApp:
 
     def configAudio(self):
         # Create the audio player
+        time.sleep(2)
         device = self.device_var.get()
         if device == '':
             # Create on the default sounds device.
@@ -372,20 +374,23 @@ class FalconShakerApp:
     def setup_ui(self):
         # Left Frame
         left_frame = tk.Frame(self.root)
-        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=10, pady=10)
+        left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=50, pady=10)
 
         # Haptics Audio Output Device Label and Drop Down
         tk.Label(left_frame, text="Haptics Audio Output Device").pack()
         self.device_var = tk.StringVar()
-        devices = [self.audio.get_device_info_by_index(i)['name'] for i in range(self.audio.get_device_count())]
-        self.device_menu = ttk.Combobox(left_frame, textvariable=self.device_var, values=devices)
+        pygame.mixer.init()
+        devices = pygame._sdl2.audio.get_audio_device_names()
+        pygame.mixer.quit()
+        self.device_menu = ttk.Combobox(left_frame, textvariable=self.device_var, width=40, values=devices)
         self.device_menu.pack()
         self.device_menu.bind("<<ComboboxSelected>>", self.on_device_select)
 
         # Profile Label and Drop Down
         tk.Label(left_frame, text="Profile").pack()
         self.profile_var = tk.StringVar()
-        self.profile_menu = ttk.Combobox(left_frame, textvariable=self.profile_var)
+        self.profiles = os.listdir("Profiles")
+        self.profile_menu = ttk.Combobox(left_frame, textvariable=self.profile_var, width=40, values=self.profiles)
         self.profile_menu.pack()
         self.profile_menu.bind("<<ComboboxSelected>>", self.on_profile_load)
 
@@ -482,9 +487,9 @@ class FalconShakerApp:
         profile_name = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON Files", "*.json")])
         if profile_name:
             profile_data = {event.name: {
-                'active': event.active,
-                'volumeCoefficient': event.volumeCoefficient,
-                'balance': event.balance
+                'active': event.active.get(),
+                'volumeCoefficient': event.volumeCoefficient.get(),
+                'balance': event.balance.get()
             } for event in self.flight_events}
             with open(profile_name, 'w') as f:
                 json.dump(profile_data, f, indent=4)
@@ -511,16 +516,16 @@ class FalconShakerApp:
                 self.profile_var.set(settings.get('profile', ''))
 
     def load_profile(self):
-        profile_name = filedialog.askopenfilename(defaultextension=".json", filetypes=[("JSON Files", "*.json")])
+        profile_name = self.profile_var.get()
         if profile_name:
-            with open(profile_name, 'r') as f:
+            with open(os.path.join('Profiles', profile_name), 'r') as f:
                 profile_data = json.load(f)
                 for event in self.flight_events:
                     if event.name in profile_data:
                         data = profile_data[event.name]
-                        event.active = data.get('active', True)
-                        event.volumeCoefficient = data.get('volumeCoefficient', 50)
-                        event.balance = data.get('balance', 0)
+                        event.active.set(data.get('active', True))
+                        event.volumeCoefficient.set(data.get('volumeCoefficient', 50))
+                        event.balance.set(data.get('balance', 0))
 
     def on_device_select(self, event):
         device_name = self.device_var.get()
