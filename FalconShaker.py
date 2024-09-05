@@ -32,6 +32,7 @@ import time
 import ctypes
 import struct
 import mmap
+import numpy as np
 
 
 class FlightEvent:
@@ -348,7 +349,7 @@ class FalconShakerApp:
 
         self.impactDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "ImpactDamage.wav"))
         self.blastDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "BlastDamage.wav"))
-        self.gForceSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
+        self.gForceSound = pygame.mixer.Sound(os.path.join('Sound Files', "gForce.wav"))
         self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
         self.runwayBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
         self.airBrakeSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
@@ -366,6 +367,9 @@ class FalconShakerApp:
         self.rpm2Channel = pygame.mixer.Channel(2)
         self.rpm2Channel.set_volume(0)
         self.rpm2Channel.play(self.rpm2Sound, -1)
+        self.gForceChannel = pygame.mixer.Channel(9)
+        self.gForceChannel.set_volume(0)
+        self.gForceChannel.play(self.gForceSound, -1)
 
         # Queued Audio Channels
         self.runwayBumpChannel = pygame.mixer.Channel(3)
@@ -465,7 +469,7 @@ class FalconShakerApp:
             FlightEvent(name='Mild Damage', volumeCoefficient=100, balance=0, fileName='ImpactDamage.wav'),
             FlightEvent(name='Heavy Damage', volumeCoefficient=100, balance=0, fileName='BlastDamage.wav'),
 
-            FlightEvent(name='G-Force (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
+            FlightEvent(name='G-Force (Not Implemented)', volumeCoefficient=100, balance=0, fileName='gForce.wav'),
             FlightEvent(name='Stall (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
             FlightEvent(name='Tactile Runway', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
             FlightEvent(name='Air Brakes (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav')
@@ -649,6 +653,15 @@ class FalconShakerApp:
                 self.bombChannel.set_volume(self.flight_events[7].volumeCoefficient.get()/100)
                 self.bombChannel.play(self.bombDroppedSound)
             self.bombDropped = BombDropped
+
+            # Update G-Force Channel. Assume that we're going to make out at around 10 G
+            if self.flight_events[11].active and is3D:
+                self.gForceChannel.set_volume(
+                    np.exp(0.5 * fd.gs)/100 # General Shape. Should be near 1
+                    * self.flight_events[11].volumeCoefficient.get()/100 # Volume coefficient
+                )
+            else:
+                self.gForceChannel.set_volume(0)
 
             time.sleep(0.2)
             #
