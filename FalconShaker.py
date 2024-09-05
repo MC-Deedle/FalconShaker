@@ -469,7 +469,7 @@ class FalconShakerApp:
             FlightEvent(name='Mild Damage', volumeCoefficient=100, balance=0, fileName='ImpactDamage.wav'),
             FlightEvent(name='Heavy Damage', volumeCoefficient=100, balance=0, fileName='BlastDamage.wav'),
 
-            FlightEvent(name='G-Force (Not Implemented)', volumeCoefficient=100, balance=0, fileName='gForce.wav'),
+            FlightEvent(name='G-Force', volumeCoefficient=100, balance=0, fileName='gForce.wav'),
             FlightEvent(name='Stall (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
             FlightEvent(name='Tactile Runway', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
             FlightEvent(name='Air Brakes (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav')
