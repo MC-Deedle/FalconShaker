@@ -286,7 +286,7 @@ class Strings():
 class FalconShakerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Falcon Bum Movement Shaker")
+        self.root.title("Falcon Shaker")
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width // 5 * 4}x{screen_height // 3 * 2}")
@@ -314,7 +314,6 @@ class FalconShakerApp:
 
     def configAudio(self):
         # Create the audio player
-        time.sleep(2)
         device = self.device_var.get()
         if device == '':
             # Create on the default sounds device.
@@ -323,9 +322,14 @@ class FalconShakerApp:
             pygame.mixer.pre_init()
             pygame.mixer.init()
         else:
-            pygame.mixer.quit()
-            pygame.mixer.pre_init()
-            pygame.mixer.init(devicename=device)
+            try:
+                pygame.mixer.quit()
+                pygame.mixer.pre_init()
+                pygame.mixer.init(devicename=device)
+            except Exception as e:
+                print("It appears that the device ", device, " does not exist. Connecting to default device.")
+                pygame.mixer.pre_init()
+                pygame.mixer.init()
 
         # There's a bit going on so...
         pygame.mixer.set_num_channels(20)
