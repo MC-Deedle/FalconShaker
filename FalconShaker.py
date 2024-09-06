@@ -350,7 +350,7 @@ class FalconShakerApp:
         self.impactDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "ImpactDamage.wav"))
         self.blastDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "BlastDamage.wav"))
         self.gForceSound = pygame.mixer.Sound(os.path.join('Sound Files', "gForce.wav"))
-        self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
+        self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "stall.wav"))
         self.runwayBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
         self.airBrakeSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
 
@@ -370,6 +370,9 @@ class FalconShakerApp:
         self.gForceChannel = pygame.mixer.Channel(9)
         self.gForceChannel.set_volume(0)
         self.gForceChannel.play(self.gForceSound, -1)
+        self.stallChannel = pygame.mixer.Channel(10)
+        self.stallChannel.set_volume(0)
+        self.stallChannel.play(self.stallSound, -1)
 
         # Queued Audio Channels
         self.runwayBumpChannel = pygame.mixer.Channel(3)
@@ -470,7 +473,7 @@ class FalconShakerApp:
             FlightEvent(name='Heavy Damage', volumeCoefficient=100, balance=0, fileName='BlastDamage.wav'),
 
             FlightEvent(name='G-Force', volumeCoefficient=100, balance=0, fileName='gForce.wav'),
-            FlightEvent(name='Stall (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
+            FlightEvent(name='Stall', volumeCoefficient=100, balance=0, fileName='stall.wav'),
             FlightEvent(name='Tactile Runway', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
             FlightEvent(name='Air Brakes (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav')
         ]
@@ -663,7 +666,15 @@ class FalconShakerApp:
             else:
                 self.gForceChannel.set_volume(0)
 
-            time.sleep(0.2)
+            # Update stall channel
+            ias = fd.kias
+            if self.flight_events[12].active and is3D and ias >= 0 and ias <=180:
+                stallM = 1 - (ias / 180)
+                self.stallChannel.set_volume(stallM*self.flight_events[12].volumeCoefficient.get()/100)
+            else:
+                self.stallChannel.set_volume(0)
+
+            time.sleep(0.1)
             #
 
 
