@@ -1,12 +1,12 @@
 {
     "Engine 1 RPM": {
         "active": true,
-        "volumeCoefficient": 100.0,
+        "volumeCoefficient": 56.0,
         "balance": 0.0
     },
     "Engine 2 RPM": {
         "active": true,
-        "volumeCoefficient": 100.0,
+        "volumeCoefficient": 49.0,
         "balance": 0.0
     },
     "Gear Up": {
