@@ -1,3 +1,4 @@
+
 # Falcon Shaker
 # Authored by Yaan Dalzell
 
@@ -33,6 +34,7 @@ import ctypes
 import struct
 import mmap
 import numpy as np
+from pygame.examples.music_drop_fade import volume
 
 
 class FlightEvent:
@@ -310,6 +312,7 @@ class FalconShakerApp:
         self.AAMFired = 0
         self.AGMFired = 0
         self.lastDamage = None
+        self.ARConnected = False
 
         self.create_update_thread()
 
@@ -350,8 +353,9 @@ class FalconShakerApp:
         self.impactDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "ImpactDamage.wav"))
         self.blastDamageSound = pygame.mixer.Sound(os.path.join('Sound Files', "BlastDamage.wav"))
         self.gForceSound = pygame.mixer.Sound(os.path.join('Sound Files', "gForce.wav"))
-        self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
+        self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "stall.wav"))
         self.runwayBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
+        self.ARBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
         self.airBrakeSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
 
 
@@ -370,6 +374,9 @@ class FalconShakerApp:
         self.gForceChannel = pygame.mixer.Channel(9)
         self.gForceChannel.set_volume(0)
         self.gForceChannel.play(self.gForceSound, -1)
+        self.stallChannel = pygame.mixer.Channel(10)
+        self.stallChannel.set_volume(0)
+        self.stallChannel.play(self.stallSound, -1)
 
         # Queued Audio Channels
         self.runwayBumpChannel = pygame.mixer.Channel(3)
@@ -378,6 +385,7 @@ class FalconShakerApp:
         self.AAMChannel = pygame.mixer.Channel(6)
         self.AGMChannel = pygame.mixer.Channel(7)
         self.bombChannel = pygame.mixer.Channel(8)
+        self.ARBumpChannel = pygame.mixer.Channel(11)
 
     def setup_ui(self):
         # Left Frame
@@ -470,8 +478,9 @@ class FalconShakerApp:
             FlightEvent(name='Heavy Damage', volumeCoefficient=100, balance=0, fileName='BlastDamage.wav'),
 
             FlightEvent(name='G-Force', volumeCoefficient=100, balance=0, fileName='gForce.wav'),
-            FlightEvent(name='Stall (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
+            FlightEvent(name='Stall', volumeCoefficient=100, balance=0, fileName='stall.wav'),
             FlightEvent(name='Tactile Runway', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
+            FlightEvent(name='AR Connect/Disconnect', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
             FlightEvent(name='Air Brakes (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav')
         ]
         return events
@@ -558,6 +567,9 @@ class FalconShakerApp:
             fd2 = read_shared_memory(FlightData2)
             iv = read_shared_memory(IntellivibeData)
 
+            isOnGroundBit = 0x10 # True if on ground
+            lightbits = fd.lightBits
+            isAirborne = (lightbits & isOnGroundBit) == 0
             is3D = iv.In3D
 
             # Update Gun Channel
@@ -567,7 +579,7 @@ class FalconShakerApp:
                 self.cannonChannel.set_volume(0)
 
             # Update RPM1 Channel
-            if fd.rpm > 1 and is3D and self.flight_events[0].active:
+            if fd.rpm > 1 and is3D and self.flight_events[0].active.get():
 
                 self.rpm1Channel.set_volume(
                     self.flight_events[0].volumeCoefficient.get() / 100 * (
@@ -577,7 +589,7 @@ class FalconShakerApp:
                 self.rpm1Channel.set_volume(0)
 
             # Update RPM2 Channel
-            if fd2.rpm2 > 1 and is3D and self.flight_events[1].active:
+            if fd2.rpm2 > 1 and is3D and self.flight_events[1].active.get():
 
                 self.rpm2Channel.set_volume(
                     self.flight_events[1].volumeCoefficient.get() / 100 * (
@@ -588,7 +600,7 @@ class FalconShakerApp:
 
             # Update RunWay Bump Channel
             if 0.8 > fd2.bumpIntensity > 0.1 and self.runwayBumpChannel.get_busy() is False and iv.In3D \
-                    and self.flight_events[13].active:
+                    and self.flight_events[13].active.get():
                 self.runwayBumpChannel.set_volume(1*self.flight_events[13].volumeCoefficient.get()/100)
                 self.runwayBumpChannel.play(self.runwayBumpSound)
 
@@ -599,7 +611,7 @@ class FalconShakerApp:
             else:
                 gearPosDiff = self.gearPos - newGearPos
                 if is3D:
-                    if self.flight_events[3].active:
+                    if self.flight_events[3].active.get():
                         # if gear was descending but is now at limit play gear lock down
                         if gearPosDiff < 0.0 and newGearPos == 1 and self.gearLockDownSound.get_num_channels() == 0:
                             self.gearChannel.set_volume(self.flight_events[3].volumeCoefficient.get()/100)
@@ -663,7 +675,29 @@ class FalconShakerApp:
             else:
                 self.gForceChannel.set_volume(0)
 
-            time.sleep(0.2)
+            # Update stall channel
+            ias = fd.kias
+            if self.flight_events[12].active.get() and is3D and isAirborne and ias > 0 and ias < 200:
+                if 0 <= ias <= 100:
+                    stallM = 1
+                elif 100 < ias < 200:
+                    stallM = (1 - ((ias - 100)/100))
+                else:
+                    stallM = 0
+                self.stallChannel.set_volume(stallM*self.flight_events[12].volumeCoefficient.get()/100)
+            else:
+                self.stallChannel.set_volume(0)
+
+
+            # Update Refuel Contact/Disengage
+            isARDisconnectBit = 0x10000
+            isARConnected = (lightbits & isARDisconnectBit) != 0
+            if self.ARConnected != isARConnected and self.flight_events[14].active:
+                self.ARBumpChannel.set_volume(self.flight_events[14].volumeCoefficient.get()/100)
+                self.ARBumpChannel.play(self.ARBumpSound)
+                self.ARConnected = isARConnected
+
+            time.sleep(0.1)
             #
 
 
