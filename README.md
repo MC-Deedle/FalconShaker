@@ -1,17 +1,26 @@
 # FalconShaker
 Haptic Feedback App for Falcon BMS 4.37.4
 
-Installation:
 
-1: Clone or download repo
+## Installation
 
-2: Install ffmpeg on your pc
+Download the latest release from here:
 
-3: Copy ffmpeg.exe, ffplay.exe and ffprobe.exe from ffmpeg to this directory.
+[Github Releases Overview](https://github.com/MC-Deedle/FalconShaker/releases)
 
-4: Ensure that you have python installed. This version was developed and tested against Python 3.9
 
-5: Open a terminal window, navigate to this directory and run either
+## Running it
 
--- For Virtual Environment setup:
-	
+- Unpack the ZIP file somewhere
+- Run the .exe
+- Select an audio device and a profile to use
+- Enjoy
+
+# Developers
+
+## Building a new EXE
+
+- install python 3.9
+- enable running powershell scripts on your machine
+- run `build.ps1` (either from PowerShell or right click 'Run with PowerShell' in explorer)
+- find `falcon-shaker.zip` and have fun.
