@@ -22,5 +22,5 @@ Download the latest release from here:
 
 - install python 3.9
 - enable running powershell scripts on your machine
-- run `build.ps1`
-
+- run `build.ps1` (either from PowerShell or right click 'Run with PowerShell' in explorer)
+- find `falcon-shaker.zip` and have fun.
