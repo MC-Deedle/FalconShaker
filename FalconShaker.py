@@ -46,11 +46,28 @@ class FlightEvent:
         self.volume = None
         self.fileName = fileName
 
+
     def testSound(self):
-        if os.path.exists(os.path.join('Sound Files', self.fileName)):
-            pygame.mixer.music.load(os.path.join('Sound Files', self.fileName))
-            pygame.mixer.music.set_volume(self.volumeCoefficient.get()/100)
-            pygame.mixer.music.play(1)
+        thisSound = pygame.mixer.Sound(os.path.join('Sound Files', self.fileName))
+        thisChannel = pygame.mixer.Channel(19)
+        thisChannel.set_volume(self.get_volumes('l'), self.get_volumes('r'))
+        thisChannel.play(thisSound)
+
+
+
+    def get_volumes(self, ch):
+        balanceValue = self.balance.get()
+        volumeCoefficient = self.volumeCoefficient.get()
+        # movement to left reduces RHS volume
+        # Movement to right reduces LHS volume
+        if ch == 'l':
+            v = (min(100 - balanceValue, 100) / 100.0) * (volumeCoefficient / 100.0)
+        elif ch == 'r':
+            v = (min(100 + balanceValue, 100) / 100.0) * (volumeCoefficient / 100.0)
+        else:
+            v = volumeCoefficient / 100.0
+        return v
+
 
 
 class FlightData(ctypes.Structure):
@@ -574,26 +591,28 @@ class FalconShakerApp:
 
             # Update Gun Channel
             if iv.IsFiringGun and is3D and self.flight_events[4].active:
-                self.cannonChannel.set_volume(1*self.flight_events[4].volumeCoefficient.get()/100)
+                self.cannonChannel.set_volume(
+                    self.flight_events[4].get_volumes('l'),
+                    self.flight_events[4].get_volumes('r'))
             else:
                 self.cannonChannel.set_volume(0)
 
             # Update RPM1 Channel
             if fd.rpm > 1 and is3D and self.flight_events[0].active.get():
-
+                rpm1mp = (((fd.rpm / 2) - 25) / 100)
                 self.rpm1Channel.set_volume(
-                    self.flight_events[0].volumeCoefficient.get() / 100 * (
-                            ((fd.rpm / 2) - 25) / 100)
+                    self.flight_events[0].get_volumes('l')*rpm1mp,
+                    self.flight_events[0].get_volumes('r')*rpm1mp
                 )
             else:
                 self.rpm1Channel.set_volume(0)
 
             # Update RPM2 Channel
             if fd2.rpm2 > 1 and is3D and self.flight_events[1].active.get():
-
+                rpm2mp = (((fd2.rpm2 / 2) - 25) / 100)
                 self.rpm2Channel.set_volume(
-                    self.flight_events[1].volumeCoefficient.get() / 100 * (
-                            ((fd2.rpm2 / 2) - 25) / 100)
+                    self.flight_events[1].get_volumes('l') * rpm2mp,
+                    self.flight_events[1].get_volumes('r') * rpm2mp
                 )
             else:
                 self.rpm2Channel.set_volume(0)
@@ -601,7 +620,10 @@ class FalconShakerApp:
             # Update RunWay Bump Channel
             if 0.8 > fd2.bumpIntensity > 0.1 and self.runwayBumpChannel.get_busy() is False and iv.In3D \
                     and self.flight_events[13].active.get():
-                self.runwayBumpChannel.set_volume(1*self.flight_events[13].volumeCoefficient.get()/100)
+                self.runwayBumpChannel.set_volume(
+                    self.flight_events[13].get_volumes('l'),
+                    self.flight_events[13].get_volumes('r')
+                )
                 self.runwayBumpChannel.play(self.runwayBumpSound)
 
             # Update Landing Gear Channel
@@ -614,19 +636,19 @@ class FalconShakerApp:
                     if self.flight_events[3].active.get():
                         # if gear was descending but is now at limit play gear lock down
                         if gearPosDiff < 0.0 and newGearPos == 1 and self.gearLockDownSound.get_num_channels() == 0:
-                            self.gearChannel.set_volume(self.flight_events[3].volumeCoefficient.get()/100)
+                            self.gearChannel.set_volume(self.flight_events[3].get_volumes('l'), self.flight_events[3].get_volumes('r'))
                             self.gearChannel.play(self.gearLockDownSound)
                         # Gear is descending and descending sound not playing
                         if gearPosDiff < 0.0 and newGearPos != 1 and self.gearTransitionDownSound.get_num_channels() == 0:
-                            self.gearChannel.set_volume(self.flight_events[3].volumeCoefficient.get()/100)
+                            self.gearChannel.set_volume(self.flight_events[3].get_volumes('l'), self.flight_events[3].get_volumes('r'))
                             self.gearChannel.play(self.gearTransitionDownSound)
                     # Gear was ascending but is now at limit
                     if self.flight_events[2].active:
                         if gearPosDiff > 0.0 and newGearPos == 0 and self.gearLockUpSound.get_num_channels() == 0:
-                            self.gearChannel.set_volume(self.flight_events[2].volumeCoefficient.get()/100)
+                            self.gearChannel.set_volume(self.flight_events[2].get_volumes('l'), self.flight_events[2].get_volumes('r'))
                             self.gearChannel.play(self.gearLockUpSound)
                         if gearPosDiff > 0.0 and newGearPos != 0 and self.gearTransitionUpSound.get_num_channels() == 0:
-                            self.gearChannel.set_volume(self.flight_events[2].volumeCoefficient.get()/100)
+                            self.gearChannel.set_volume(self.flight_events[2].get_volumes('l'), self.flight_events[2].get_volumes('r'))
                             self.gearChannel.play(self.gearTransitionUpSound)
             self.gearPos = newGearPos
 
@@ -638,39 +660,40 @@ class FalconShakerApp:
                 damageForce = iv.damageforce
                 if newDamage != self.lastDamage and is3D:
                     if damageForce <= 50 and self.flight_events[9].active:
-                        self.damageChannel.set_volume(self.flight_events[9].volumeCoefficient.get()/100)
+                        self.damageChannel.set_volume(self.flight_events[9].get_volumes('l'), self.flight_events[9].get_volumes('r'))
                         self.damageChannel.play(self.impactDamageSound)
                     if damageForce > 50 and self.flight_events[10].active:
-                        self.damageChannel.set_volume(self.flight_events[10].volumeCoefficient.get()/100)
+                        self.damageChannel.set_volume(self.flight_events[10].get_volumes('l'), self.flight_events[10].get_volumes('r'))
                         self.damageChannel.play(self.blastDamageSound)
                 self.lastDamage = newDamage
 
             # Update AA Missile Channel
             AAMFired = iv.AAMissileFired
             if AAMFired > self.AAMFired and self.flight_events[5].active:
-                self.AAMChannel.set_volume(self.flight_events[5].volumeCoefficient.get()/100)
+                self.AAMChannel.set_volume(self.flight_events[5].get_volumes('l'), self.flight_events[5].get_volumes('r'))
                 self.AAMChannel.play(self.AAMFiredSound)
             self.AAMFired = AAMFired
 
             # Update AG Missile Channel
             AGMFired = iv.AGMissileFired
             if AGMFired > self.AGMFired and self.flight_events[6].active:
-                self.AGMChannel.set_volume(self.flight_events[6].volumeCoefficient.get()/100)
+                self.AGMChannel.set_volume(self.flight_events[6].get_volumes('l'), self.flight_events[6].get_volumes('r'))
                 self.AGMChannel.play(self.AGMFiredSound)
             self.AGMFired = AGMFired
 
             # Update Bomb Release Channel
             BombDropped = iv.BombDropped
             if BombDropped > self.bombDropped and self.flight_events[7].active:
-                self.bombChannel.set_volume(self.flight_events[7].volumeCoefficient.get()/100)
+                self.bombChannel.set_volume(self.flight_events[7].get_volumes('l'), self.flight_events[7].get_volumes('r'))
                 self.bombChannel.play(self.bombDroppedSound)
             self.bombDropped = BombDropped
 
             # Update G-Force Channel. Assume that we're going to make out at around 10 G
             if self.flight_events[11].active and is3D:
+                gForcemp = np.exp(0.5 * fd.gs)/100
                 self.gForceChannel.set_volume(
-                    np.exp(0.5 * fd.gs)/100 # General Shape. Should be near 1
-                    * self.flight_events[11].volumeCoefficient.get()/100 # Volume coefficient
+                    self.flight_events[11].get_volumes('l')*gForcemp,
+                    self.flight_events[11].get_volumes('r')*gForcemp
                 )
             else:
                 self.gForceChannel.set_volume(0)
@@ -684,7 +707,10 @@ class FalconShakerApp:
                     stallM = (1 - ((ias - 100)/100))
                 else:
                     stallM = 0
-                self.stallChannel.set_volume(stallM*self.flight_events[12].volumeCoefficient.get()/100)
+                self.stallChannel.set_volume(
+                    self.flight_events[12].get_volumes('l')*stallM,
+                    self.flight_events[12].get_volumes('r')*stallM
+                )
             else:
                 self.stallChannel.set_volume(0)
 
@@ -693,7 +719,7 @@ class FalconShakerApp:
             isARDisconnectBit = 0x10000
             isARConnected = (lightbits & isARDisconnectBit) != 0
             if self.ARConnected != isARConnected and self.flight_events[14].active:
-                self.ARBumpChannel.set_volume(self.flight_events[14].volumeCoefficient.get()/100)
+                self.ARBumpChannel.set_volume(self.flight_events[14].get_volumes('l'), self.flight_events[14].get_volumes('r'))
                 self.ARBumpChannel.play(self.ARBumpSound)
                 self.ARConnected = isARConnected
 
