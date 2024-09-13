@@ -695,7 +695,7 @@ class FalconShakerApp:
             self.bombDropped = BombDropped
 
             # Update G-Force Channel. Assume that we're going to make out at around 10 G
-            if self.flight_events[11].active.get() and is3D and 0.8 > fd.gs > 1.2:
+            if self.flight_events[11].active.get() and is3D and (fd.gs < -1.2 or fd.gs > 1.2):
                 gForcemp = ((100/9*abs(fd.gs))-(100/9))/100
                 self.gForceChannel.set_volume(
                     self.flight_events[11].get_volumes('l')*gForcemp,
@@ -730,7 +730,6 @@ class FalconShakerApp:
                 self.ARConnected = isARConnected
 
             # Update AirBrake Drag Sound
-            # Update Landing Gear Channel
             newAirbrakePos = fd.speedBrake
             if self.airBrakePos is None:
                 self.airBrakePos = newAirbrakePos
@@ -752,7 +751,7 @@ class FalconShakerApp:
                 self.airbrakeDragChannel.set_volume(0)
 
             time.sleep(0.1)
-            #
+
 
 
 def read_shared_memory(structure):
