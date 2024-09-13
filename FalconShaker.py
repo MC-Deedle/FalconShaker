@@ -325,6 +325,7 @@ class FalconShakerApp:
 
         # Variables used for tracking ownship status
         self.gearPos = None
+        self.airBrakePos = None
         self.bombDropped = 0
         self.AAMFired = 0
         self.AGMFired = 0
@@ -373,10 +374,8 @@ class FalconShakerApp:
         self.stallSound = pygame.mixer.Sound(os.path.join('Sound Files', "stall.wav"))
         self.runwayBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
         self.ARBumpSound = pygame.mixer.Sound(os.path.join('Sound Files', "RunwayBump.wav"))
-        self.airBrakeSound = pygame.mixer.Sound(os.path.join('Sound Files', "nope.wav"))
-
-
-
+        self.airBrakeMoveSound = pygame.mixer.Sound(os.path.join('Sound Files', "AirBrakeMove.wav"))
+        self.airBrakeDragSound = pygame.mixer.Sound(os.path.join('Sound Files', "AirBrakeDrag.wav"))
 
         #  Constant Play Audio Channels
         self.cannonChannel = pygame.mixer.Channel(0)
@@ -394,6 +393,12 @@ class FalconShakerApp:
         self.stallChannel = pygame.mixer.Channel(10)
         self.stallChannel.set_volume(0)
         self.stallChannel.play(self.stallSound, -1)
+        self.airbrakeMoveChannel = pygame.mixer.Channel(12)
+        self.airbrakeMoveChannel.set_volume(0)
+        self.airbrakeMoveChannel.play(self.airBrakeMoveSound, -1)
+        self.airbrakeDragChannel = pygame.mixer.Channel(13)
+        self.airbrakeDragChannel.set_volume(0)
+        self.airbrakeDragChannel.play(self.airBrakeDragSound, -1)
 
         # Queued Audio Channels
         self.runwayBumpChannel = pygame.mixer.Channel(3)
@@ -498,7 +503,8 @@ class FalconShakerApp:
             FlightEvent(name='Stall', volumeCoefficient=100, balance=0, fileName='stall.wav'),
             FlightEvent(name='Tactile Runway', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
             FlightEvent(name='AR Connect/Disconnect', volumeCoefficient=100, balance=0, fileName='RunwayBump.wav'),
-            FlightEvent(name='Air Brakes (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav')
+            FlightEvent(name='Air Brakes Actuation', volumeCoefficient=100, balance=0, fileName='AirBrakeMove.wav'),
+            FlightEvent(name='Air Brakes Turbulence', volumeCoefficient=100, balance=0, fileName='AirBrakeDrag.wav')
         ]
         return events
 
@@ -689,8 +695,8 @@ class FalconShakerApp:
             self.bombDropped = BombDropped
 
             # Update G-Force Channel. Assume that we're going to make out at around 10 G
-            if self.flight_events[11].active and is3D:
-                gForcemp = np.exp(0.5 * fd.gs)/100
+            if self.flight_events[11].active.get() and is3D and 0.8 > fd.gs > 1.2:
+                gForcemp = ((100/9*abs(fd.gs))-(100/9))/100
                 self.gForceChannel.set_volume(
                     self.flight_events[11].get_volumes('l')*gForcemp,
                     self.flight_events[11].get_volumes('r')*gForcemp
@@ -722,6 +728,28 @@ class FalconShakerApp:
                 self.ARBumpChannel.set_volume(self.flight_events[14].get_volumes('l'), self.flight_events[14].get_volumes('r'))
                 self.ARBumpChannel.play(self.ARBumpSound)
                 self.ARConnected = isARConnected
+
+            # Update AirBrake Drag Sound
+            # Update Landing Gear Channel
+            newAirbrakePos = fd.speedBrake
+            if self.airBrakePos is None:
+                self.airBrakePos = newAirbrakePos
+            else:
+                airBrakeDiff = self.airBrakePos - newAirbrakePos
+                if is3D and self.flight_events[14].active.get() and abs(airBrakeDiff) > 0 and self.airBrakeMoveSound.get_num_channels() == 0:
+                    self.airbrakeMoveChannel.set_volume(
+                        self.flight_events[14].get_volumes('l')
+                        , self.flight_events[14].get_volumes('r'))
+                    self.airbrakeMoveChannel.play(self.airBrakeMoveSound)
+                else: self.airbrakeMoveChannel.stop()
+            self.airBrakePos = newAirbrakePos
+
+            # Update Airbrake Drag Channel
+            if self.flight_events[16].active.get() and is3D:
+                self.airbrakeDragChannel.set_volume(self.flight_events[16].get_volumes('l')*fd.speedBrake
+                                                , self.flight_events[16].get_volumes('r')*fd.speedBrake)
+            else:
+                self.airbrakeDragChannel.set_volume(0)
 
             time.sleep(0.1)
             #
