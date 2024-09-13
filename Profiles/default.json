@@ -1,81 +1,81 @@
 {
     "Engine 1 RPM": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Engine 2 RPM": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Gear Up": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Gear Down": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Cannon": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "AAMissile Release": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "AGMissile Release": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Bomb Release": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Jettison (Not Implemented)": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Mild Damage": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Heavy Damage": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "G-Force": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Stall": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Tactile Runway": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "AR Connect/Disconnect": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Air Brakes": {
-        "active": false,
+        "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     }
