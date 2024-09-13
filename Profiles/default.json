@@ -1,12 +1,12 @@
 {
     "Engine 1 RPM": {
         "active": true,
-        "volumeCoefficient": 56.0,
+        "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Engine 2 RPM": {
         "active": true,
-        "volumeCoefficient": 49.0,
+        "volumeCoefficient": 100.0,
         "balance": 0.0
     },
     "Gear Up": {
@@ -54,12 +54,12 @@
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
-    "G-Force (Not Implemented)": {
+    "G-Force": {
         "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
-    "Stall (Not Implemented)": {
+    "Stall": {
         "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
@@ -69,7 +69,12 @@
         "volumeCoefficient": 100.0,
         "balance": 0.0
     },
-    "Air Brakes (Not Implemented)": {
+    "AR Connect/Disconnect": {
+        "active": true,
+        "volumeCoefficient": 100.0,
+        "balance": 0.0
+    },
+    "Air Brakes": {
         "active": true,
         "volumeCoefficient": 100.0,
         "balance": 0.0
