@@ -25,6 +25,8 @@ import os
 import json
 import tkinter as tk
 from tkinter import ttk, filedialog
+from tkinter.filedialog import askdirectory
+
 import pyaudio
 import pygame.mixer
 import pygame._sdl2.audio as sdl2_audio
@@ -33,8 +35,7 @@ import time
 import ctypes
 import struct
 import mmap
-import numpy as np
-from pygame.examples.music_drop_fade import volume
+
 
 
 class FlightEvent:
@@ -49,6 +50,7 @@ class FlightEvent:
 
     def testSound(self):
         thisSound = pygame.mixer.Sound(os.path.join('Sound Files', self.fileName))
+        thisChannel = pygame.mixer.Channel(19).stop()
         thisChannel = pygame.mixer.Channel(19)
         thisChannel.set_volume(self.get_volumes('l'), self.get_volumes('r'))
         thisChannel.play(thisSound)
@@ -320,7 +322,7 @@ class FalconShakerApp:
         self.flight_events = self.create_flight_events()
         self.setup_ui()
         self.load_settings()
-
+        self.load_profile()
         self.configAudio()
 
         # Variables used for tracking ownship status
@@ -331,6 +333,8 @@ class FalconShakerApp:
         self.AGMFired = 0
         self.lastDamage = None
         self.ARConnected = False
+
+
 
         self.create_update_thread()
 
@@ -415,7 +419,9 @@ class FalconShakerApp:
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=False, padx=50, pady=10)
 
         # Haptics Audio Output Device Label and Drop Down
-        tk.Label(left_frame, text="Haptics Audio Output Device").pack()
+        device_label_frame = tk.Frame(left_frame)
+        device_label_frame.pack(expand=False, ipadx=52, pady=10)
+        tk.Label(device_label_frame, text="Haptics Audio Output Device").pack(side = tk.LEFT)
         self.device_var = tk.StringVar()
         pygame.mixer.init()
         devices = pygame._sdl2.audio.get_audio_device_names()
@@ -424,10 +430,23 @@ class FalconShakerApp:
         self.device_menu.pack()
         self.device_menu.bind("<<ComboboxSelected>>", self.on_device_select)
 
+        # # Profile Directory Selection - Not working yet
+        # profile_dir_frame = tk.Frame(left_frame)
+        # tk.Label(profile_dir_frame, text="Profile Directory").pack(side=tk.LEFT)
+        # self.profile_dir_select = tk.Button(profile_dir_frame, text='Select', command=self.get_profile_directory)
+        # self.profile_dir_select.pack(side=tk.LEFT)
+        # profile_dir_frame.pack(expand=False, ipadx=65, pady=10)
+        self.profile_dir_var = tk.StringVar()
+        self.profile_dir_var.set('Profiles')
+        # self.profile_dir_entry = tk.Entry(left_frame, width=43, textvariable=self.profile_dir_var, state="disabled").pack()
+
+
         # Profile Label and Drop Down
-        tk.Label(left_frame, text="Profile").pack()
+        profile_frame = tk.Frame(left_frame)
+        tk.Label(profile_frame, text="Profile").pack(side = tk.LEFT)
+        profile_frame.pack(expand=False, ipadx=110, pady=10)
         self.profile_var = tk.StringVar()
-        self.profiles = os.listdir("Profiles")
+        self.profiles = os.listdir(self.profile_dir_var.get())
         self.profile_menu = ttk.Combobox(left_frame, textvariable=self.profile_var, width=40, values=self.profiles)
         self.profile_menu.pack()
         self.profile_menu.bind("<<ComboboxSelected>>", self.on_profile_load)
@@ -524,7 +543,7 @@ class FalconShakerApp:
         event.inputVariable = float(var.get())
 
     def save_profile(self):
-        profile_name = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON Files", "*.json")])
+        profile_name = filedialog.asksaveasfilename(initialdir=self.profile_dir_var.get(), defaultextension=".json", filetypes=[("JSON Files", "*.json")])
         if profile_name:
             profile_data = {event.name: {
                 'active': event.active.get(),
@@ -533,6 +552,8 @@ class FalconShakerApp:
             } for event in self.flight_events}
             with open(profile_name, 'w') as f:
                 json.dump(profile_data, f, indent=4)
+        self.profiles = os.listdir(self.profile_dir_var.get())
+        self.profile_menu['values'] = self.profiles
 
     def quit_application(self):
         self.stop_thread = True
@@ -543,22 +564,30 @@ class FalconShakerApp:
     def save_settings(self):
         settings = {
             'sound_device': self.device_var.get(),
+            'profile_dir_var': self.profile_dir_var.get(),
             'profile': self.profile_var.get()
         }
         with open('set.cfg', 'w') as f:
             json.dump(settings, f, indent=4)
+
+    def get_profile_directory(self):
+        self.profile_dir_var.set(askdirectory())
+
 
     def load_settings(self):
         if os.path.exists('set.cfg'):
             with open('set.cfg', 'r') as f:
                 settings = json.load(f)
                 self.device_var.set(settings.get('sound_device', ''))
+                self.profile_dir_var.set(settings.get('profile_dir_var', ''))
+                self.profiles=os.listdir(self.profile_dir_var.get())
                 self.profile_var.set(settings.get('profile', ''))
+
 
     def load_profile(self):
         profile_name = self.profile_var.get()
         if profile_name:
-            with open(os.path.join('Profiles', profile_name), 'r') as f:
+            with open(os.path.join(self.profile_dir_var.get(), profile_name), 'r') as f:
                 profile_data = json.load(f)
                 for event in self.flight_events:
                     if event.name in profile_data:
