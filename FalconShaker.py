@@ -579,10 +579,9 @@ class FalconShakerApp:
             with open('set.cfg', 'r') as f:
                 settings = json.load(f)
                 self.device_var.set(settings.get('sound_device', ''))
-                self.profile_dir_var.set(settings.get('profile_dir_var', ''))
-                self.profiles=os.listdir(self.profile_dir_var.get())
+                # self.profile_dir_var.set(settings.get('profile_dir_var', ''))
+                # self.profiles=os.listdir(self.profile_dir_var.get())
                 self.profile_var.set(settings.get('profile', ''))
-
 
     def load_profile(self):
         profile_name = self.profile_var.get()
