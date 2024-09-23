@@ -8,4 +8,4 @@ pyinstaller --onefile -w .\FalconShaker.py
 cp -r .\Profiles\ .\dist\
 cp -r '.\Sound Files\' .\dist\
 
-Compress-Archive -Update .\dist\ falcon-shaker.zip
+Compress-Archive -Update .\"FalconShaker 1.3"\ "FalconShaker 1.3.zip"
