@@ -4,8 +4,8 @@ del -r dist
 pip install pyinstaller
 pip install -r requirements.txt
 
-pyinstaller --onefile -w .\FalconShaker.py
+pyinstaller --onefile --icon=C:\Users\yaand\PycharmProjects\FalconShaker\FalconShaker.ico  -w .\FalconShaker.py
 cp -r .\Profiles\ .\dist\
 cp -r '.\Sound Files\' .\dist\
-
+cp 'FalconShaker.ico' .\dist\
 Compress-Archive -Update .\"FalconShaker 1.3"\ "FalconShaker 1.3.zip"

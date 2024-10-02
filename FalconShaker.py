@@ -309,6 +309,8 @@ class FalconShakerApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Falcon Shaker")
+        self.root.iconbitmap("FalconShaker.ico")
+
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width // 5 * 4}x{screen_height // 3 * 2}")
@@ -510,8 +512,8 @@ class FalconShakerApp:
             FlightEvent(name='Gear Down', volumeCoefficient=100, balance=0, fileName='GearTransitionDown.wav'),
 
             FlightEvent(name='Cannon', volumeCoefficient=100, balance=0, fileName='Cannon.wav'),
-            FlightEvent(name='AAMissile Release', volumeCoefficient=100, balance=0, fileName='AAMFiredSound.wav'),
-            FlightEvent(name='AGMissile Release', volumeCoefficient=100, balance=0, fileName='AGMFiredSound.wav'),
+            FlightEvent(name='AA Missile Release', volumeCoefficient=100, balance=0, fileName='AAMFiredSound.wav'),
+            FlightEvent(name='AG Missile Release', volumeCoefficient=100, balance=0, fileName='AGMFiredSound.wav'),
             FlightEvent(name='Bomb Release', volumeCoefficient=100, balance=0, fileName='BombDroppedSound.wav'),
             FlightEvent(name='Jettison (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
 

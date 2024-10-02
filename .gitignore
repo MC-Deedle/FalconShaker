@@ -167,3 +167,4 @@ ffprobe.exe
 set.cfg
 Profiles/
 *.zip
+dist/
