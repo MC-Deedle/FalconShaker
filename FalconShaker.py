@@ -308,7 +308,7 @@ class Strings():
 class FalconShakerApp:
     def __init__(self, root):
         self.root = root
-        self.root.title("Falcon Shaker")
+        self.root.title("Falcon Shaker 1.4")
         self.root.iconbitmap("FalconShaker.ico")
 
         screen_width = self.root.winfo_screenwidth()
@@ -335,8 +335,7 @@ class FalconShakerApp:
         self.AGMFired = 0
         self.lastDamage = None
         self.ARConnected = False
-
-
+        self.Ejected = False
 
         self.create_update_thread()
 
@@ -369,6 +368,7 @@ class FalconShakerApp:
         self.AAMFiredSound = pygame.mixer.Sound(os.path.join('Sound Files', "AAMFiredSound.wav"))
         self.AGMFiredSound = pygame.mixer.Sound(os.path.join('Sound Files', "AGMFiredSound.wav"))
         self.bombDroppedSound = pygame.mixer.Sound(os.path.join('Sound Files', "BombDroppedSound.wav"))
+        self.EjectSound = pygame.mixer.Sound(os.path.join('Sound Files', "eject.wav"))
         self.gearTransitionUpSound = pygame.mixer.Sound(os.path.join('Sound Files', "gearTransitionUp.wav"))
         self.gearTransitionDownSound = pygame.mixer.Sound(os.path.join('Sound Files', "gearTransitionDown.wav"))
         self.gearLockUpSound = pygame.mixer.Sound(os.path.join('Sound Files', "gearLockUp.wav"))
@@ -414,6 +414,7 @@ class FalconShakerApp:
         self.AGMChannel = pygame.mixer.Channel(7)
         self.bombChannel = pygame.mixer.Channel(8)
         self.ARBumpChannel = pygame.mixer.Channel(11)
+        self.EjectionChannel = pygame.mixer.Channel(14)
 
     def setup_ui(self):
         # Left Frame
@@ -515,7 +516,9 @@ class FalconShakerApp:
             FlightEvent(name='AA Missile Release', volumeCoefficient=100, balance=0, fileName='AAMFiredSound.wav'),
             FlightEvent(name='AG Missile Release', volumeCoefficient=100, balance=0, fileName='AGMFiredSound.wav'),
             FlightEvent(name='Bomb Release', volumeCoefficient=100, balance=0, fileName='BombDroppedSound.wav'),
-            FlightEvent(name='Jettison (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
+            FlightEvent(name='Ejection', volumeCoefficient=100, balance=0, fileName='eject.wav'),
+
+            # FlightEvent(name='Jettison (Not Implemented)', volumeCoefficient=100, balance=0, fileName='nope.wav'),
 
             FlightEvent(name='Mild Damage', volumeCoefficient=100, balance=0, fileName='ImpactDamage.wav'),
             FlightEvent(name='Heavy Damage', volumeCoefficient=100, balance=0, fileName='BlastDamage.wav'),
@@ -634,7 +637,7 @@ class FalconShakerApp:
                 self.cannonChannel.set_volume(0)
 
             # Update RPM1 Channel
-            if fd.rpm > 1 and is3D and self.flight_events[0].active.get():
+            if fd.rpm > 1 and is3D and self.Ejected is False and self.flight_events[0].active.get():
                 rpm1mp = (((fd.rpm / 2) - 25) / 100)
                 self.rpm1Channel.set_volume(
                     self.flight_events[0].get_volumes('l')*rpm1mp,
@@ -644,7 +647,7 @@ class FalconShakerApp:
                 self.rpm1Channel.set_volume(0)
 
             # Update RPM2 Channel
-            if fd2.rpm2 > 1 and is3D and self.flight_events[1].active.get():
+            if fd2.rpm2 > 1 and is3D and self.Ejected is False and self.flight_events[1].active.get():
                 rpm2mp = (((fd2.rpm2 / 2) - 25) / 100)
                 self.rpm2Channel.set_volume(
                     self.flight_events[1].get_volumes('l') * rpm2mp,
@@ -725,7 +728,7 @@ class FalconShakerApp:
             self.bombDropped = BombDropped
 
             # Update G-Force Channel. Assume that we're going to make out at around 10 G
-            if self.flight_events[11].active.get() and is3D and (fd.gs < -1.2 or fd.gs > 1.2):
+            if self.flight_events[11].active.get() and is3D and self.Ejected is False and (fd.gs < -1.2 or fd.gs > 1.2):
                 gForcemp = ((100/9*abs(fd.gs))-(100/9))/100
                 self.gForceChannel.set_volume(
                     self.flight_events[11].get_volumes('l')*gForcemp,
@@ -736,7 +739,7 @@ class FalconShakerApp:
 
             # Update stall channel
             ias = fd.kias
-            if self.flight_events[12].active.get() and is3D and isAirborne and ias > 0 and ias < 200:
+            if self.flight_events[12].active.get() and is3D and self.Ejected is False and isAirborne and ias > 0 and ias < 200:
                 if 0 <= ias <= 100:
                     stallM = 1
                 elif 100 < ias < 200:
@@ -765,7 +768,7 @@ class FalconShakerApp:
                 self.airBrakePos = newAirbrakePos
             else:
                 airBrakeDiff = self.airBrakePos - newAirbrakePos
-                if is3D and self.flight_events[14].active.get() and abs(airBrakeDiff) > 0 and self.airBrakeMoveSound.get_num_channels() == 0:
+                if is3D and self.Ejected is False and self.flight_events[14].active.get() and abs(airBrakeDiff) > 0 and self.airBrakeMoveSound.get_num_channels() == 0:
                     self.airbrakeMoveChannel.set_volume(
                         self.flight_events[14].get_volumes('l')
                         , self.flight_events[14].get_volumes('r'))
@@ -779,6 +782,14 @@ class FalconShakerApp:
                                                 , self.flight_events[16].get_volumes('r')*fd.speedBrake)
             else:
                 self.airbrakeDragChannel.set_volume(0)
+
+            # Update Eject Channel
+            if self.flight_events[8].active.get() and is3D and self.Ejected is False and iv.IsEjecting:
+                self.EjectionChannel.set_volume(self.flight_events[8].get_volumes('l')
+                                                , self.flight_events[8].get_volumes('r'))
+                self.EjectionChannel.play(self.EjectSound)
+            self.Ejected = iv.IsEjecting
+
 
             time.sleep(0.1)
 
