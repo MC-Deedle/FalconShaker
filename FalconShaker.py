@@ -364,7 +364,7 @@ class FalconShakerApp:
         # Define the audio files for each sound/sound grouping.
         self.rpm1Sound = pygame.mixer.Sound(os.path.join('Sound Files', "rpm.wav"))
         self.rpm2Sound = pygame.mixer.Sound(os.path.join('Sound Files', "rpm.wav"))
-        self.cannonSound = pygame.mixer.Sound(os.path.join('Sound Files', "Cannon.wav"))
+        self.cannonSound = pygame.mixer.Sound(os.path.join('Sound Files', "Cannon100hz.wav"))
         self.AAMFiredSound = pygame.mixer.Sound(os.path.join('Sound Files', "AAMFiredSound.wav"))
         self.AGMFiredSound = pygame.mixer.Sound(os.path.join('Sound Files', "AGMFiredSound.wav"))
         self.bombDroppedSound = pygame.mixer.Sound(os.path.join('Sound Files', "BombDroppedSound.wav"))
@@ -512,7 +512,7 @@ class FalconShakerApp:
             FlightEvent(name='Gear Up', volumeCoefficient=100, balance=0, fileName='GearTransitionUp.wav'),
             FlightEvent(name='Gear Down', volumeCoefficient=100, balance=0, fileName='GearTransitionDown.wav'),
 
-            FlightEvent(name='Cannon', volumeCoefficient=100, balance=0, fileName='Cannon.wav'),
+            FlightEvent(name='Cannon', volumeCoefficient=100, balance=0, fileName='Cannon100hz.wav'),
             FlightEvent(name='AA Missile Release', volumeCoefficient=100, balance=0, fileName='AAMFiredSound.wav'),
             FlightEvent(name='AG Missile Release', volumeCoefficient=100, balance=0, fileName='AGMFiredSound.wav'),
             FlightEvent(name='Bomb Release', volumeCoefficient=100, balance=0, fileName='BombDroppedSound.wav'),
