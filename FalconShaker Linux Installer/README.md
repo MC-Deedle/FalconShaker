@@ -4,7 +4,7 @@ A lightweight, automated Bash script designed for CachyOS (and Arch-based Linux 
 
 While optimized to automatically detect and map **FalconShaker** versions inside a `falcon-bms` directory structure, it can be used to generate shortcuts for any target executable.
 
-## 🚀 Features
+## 🚀 Features (Slop generated. May or may not be true)
 
 *   **Smart Auto-Detection**: Automatically reads the current system user to build safe, absolute environment paths.
 *   **FalconShaker Integration**: Searches for folders matching `FalconShaker *` dynamically and opens the file picker directly inside the latest discovered version directory.
@@ -23,8 +23,8 @@ The script defaults to scanning target folders within `~/Games/falcon-bms/`. If 
 
 ## 🛠️ Installation & Setup
 
-1. **Save the Script**  
-   Download FalconShaker and place it somewhere. Default is within the falcon-bms directory created by the BMS helper script.
+1. **Download Falcon**  
+   Download FalconShaker and place it somewhere. Script default is within the falcon-bms directory created by the BMS helper script.
 
 2. **Download the FalconShaker Linux Installer**
     Place this anywhere.
@@ -41,7 +41,7 @@ The script defaults to scanning target folders within `~/Games/falcon-bms/`. If 
 5. **Launch Order Matter**
     If you launch FalconShaker before the BMS launcher, it will just exit when the BMS launcher runs. Instead launch the BMS launcher first, then run FalconShaker. Usage should otherwise be the same as on Windows.
     
-6. ** Use it on other stuff!**
+6. **Use it on other stuff!**
     Just navigate to another exe that you would like to run along side BMS. A good example is kungfoo's BMS control Server. Selecting an exe that is not FalconShaker related will add an additional prompt if the application needs to run in terminal mode.
     
     
