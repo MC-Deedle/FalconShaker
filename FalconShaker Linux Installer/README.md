@@ -42,7 +42,7 @@ The script defaults to scanning target folders within `~/Games/falcon-bms/`. If 
     If you launch FalconShaker before the BMS launcher, it will just exit when the BMS launcher runs. Instead launch the BMS launcher first, then run FalconShaker. Usage should otherwise be the same as on Windows.
     
 6. **Use it on other stuff!**
-    Just navigate to another exe that you would like to run along side BMS. A good example is kungfoo's BMS control Server. Selecting an exe that is not FalconShaker related will add an additional prompt if the application needs to run in terminal mode.
+    Just navigate to another exe that you would like to run along side BMS. Selecting an exe that is not FalconShaker related will add an additional prompt if the application needs to run in terminal mode.
     
     
 
